@@ -237,7 +237,7 @@ module lmc(
 // your code goes here
     wire [10:0] cpu_out;
     cpu lmc_cpu_inst(
-        .clk(CLOCK_50),
+        .clk(SW[0] ? CLOCK_50 : !KEY[2]),
         .reset(!KEY[0]),
         .cont(!KEY[1]),
         .out(cpu_out)

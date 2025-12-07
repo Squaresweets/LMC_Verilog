@@ -2,13 +2,13 @@ module cpu (
     input logic clk,
     input logic reset,
     input logic cont,
-    output logic [10:0] out
+    output logic signed [10:0] out
 );
     //Memory stuff:
     logic [6:0] mem_addr;
-    logic [10:0] mem_data;
+    logic signed [10:0] mem_data;
     logic mem_we;
-    logic [10:0] mem_out;
+    logic signed [10:0] mem_out;
 
     memory mem(.clk(clk),
                .reset(reset),
@@ -23,11 +23,11 @@ module cpu (
 
     logic [6:0] PC;
     logic [10:0] CIR;
-    logic [10:0] ACC;
+    logic signed [10:0] ACC;
 
     logic cont_d;
 
-    logic [10:0] wrapped_ACC;
+    logic signed [10:0] wrapped_ACC;
     logic [6:0] operand;
     logic [3:0] opcode;
     always_comb begin
@@ -50,6 +50,7 @@ module cpu (
             case(state)
                 FETCH: begin
                     mem_addr <= PC;
+                    ACC <= wrapped_ACC;
                     state <= LATCH;
                 end
 
@@ -60,7 +61,7 @@ module cpu (
                 end
 
                 EXEC: begin
-                    state <= (opcode == 1 || opcode == 2 || opcode == 5) ? DATA : (opcode == 9 ? PAUSE : FETCH);
+                    state <= (opcode == 1 || opcode == 2 || opcode == 5) ? DATA : (opcode == 9 ? FETCH : FETCH);
                     mem_addr <= operand;
 
                     case(opcode)
@@ -69,16 +70,16 @@ module cpu (
                             mem_data <= ACC;
                         end
                         6: PC <= operand;                     //BRA
-                        7: PC <= (ACC == 0) ? operand : PC+1; //BRZ
-                        8: PC <= (ACC >= 0) ? operand : PC+1; //BRP
+                        7: PC <= (ACC == 0) ? operand : PC; //BRZ
+                        8: PC <= (ACC >= 0) ? operand : PC; //BRP
                         9: out <= ACC;
                     endcase
                 end
 
                 DATA: begin
                     case(opcode)
-                        1: ACC <= mem_out + ACC; //ADD
-                        2: ACC <= mem_out - ACC; //SUB
+                        1: ACC <= ACC + mem_out; //ADD
+                        2: ACC <= ACC - mem_out; //SUB
                         5: ACC <= mem_out; //LDA
                     endcase
                     state <= FETCH;

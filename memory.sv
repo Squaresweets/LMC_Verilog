@@ -2,11 +2,11 @@ module memory (
     input logic clk,
     input logic reset,
     input logic [6:0] addr,
-    input logic [10:0] data,
+    input logic signed [10:0] data,
     input logic write_enable,
-    output logic [10:0] out
+    output logic signed [10:0] out
 );
-    logic [10:0] underlying_memory [0:99];
+    logic signed [10:0] underlying_memory [0:99];
 
     assign out = underlying_memory[addr];
 
@@ -35,7 +35,6 @@ module memory (
 			underlying_memory[20] = 001;
 			underlying_memory[21] = 004;
 			underlying_memory[22] = 002;
-
 		end else if (write_enable)
             underlying_memory[addr] <= data;
     end
